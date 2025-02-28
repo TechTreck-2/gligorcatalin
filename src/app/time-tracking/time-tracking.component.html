@@ -1,0 +1,83 @@
+<div class="time-tracking">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Track Your Time</mat-card-title>
+      <button mat-icon-button (click)="toggleTheme()" class="theme-toggle-button">
+        <mat-icon>{{ isDarkTheme ? 'sunny' : 'shield_moon' }}</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-tab-group>
+      <mat-tab label="Timer">
+        <mat-card-content>
+          <h2>{{ getFormattedTime(totalTimeWorked) }} worked</h2>
+          
+          <div class="clock-container">
+            <div *ngIf="isTimerRunning" class="clock-running">
+              <svg class="clock-icon" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" stroke="#007bff" stroke-width="5" fill="none"/>
+                <line x1="50" y1="50" x2="50" y2="20" stroke="#007bff" stroke-width="5" stroke-linecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="60s" repeatCount="indefinite"/>
+                </line>
+                <line x1="50" y1="50" x2="80" y2="50" stroke="#007bff" stroke-width="5" stroke-linecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="3600s" repeatCount="indefinite"/>
+                </line>
+              </svg>
+            </div>
+          </div>
+
+          <div class="time-info">
+            <p *ngIf="clockInTime">Clocked In: {{ clockInTime | date:'shortTime' }}</p>
+            <p *ngIf="clockOutTime">Clocked Out: {{ clockOutTime | date:'shortTime' }}</p>
+          </div>
+          <div *ngIf="data">
+            <h2>Fetched Data</h2>
+            <ul>
+              <li *ngFor="let item of data">
+                {{ item.name }} - {{ item.email }}
+              </li>
+            </ul>
+          </div>
+          <button mat-raised-button color="primary" (click)="startTimer()" [disabled]="isTimerRunning" [ngClass] = "{'disabled-button': isTimerRunning}">Start Timer</button>
+          <button mat-raised-button color="warn" (click)="stopTimer()" [disabled]="!isTimerRunning" [ngClass] = "{'disabled-button': !isTimerRunning}">Stop Timer</button>
+          <button mat-raised-button color="accent" (click)="resumeTimer()" *ngIf="!isTimerRunning && isPaused">Resume Timer</button>
+          <button mat-raised-button color="primary" (click)="saveAndShowSnackBar()" [disabled]="isTimerRunning || !isPaused" [ngClass] = "{'disabled-button': isTimerRunning || !isPaused}">Save</button>
+        </mat-card-content>
+      </mat-tab>
+
+      <mat-tab label="History">
+        <mat-card-content>
+          <h2>
+            Time History
+          </h2>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Select Date</mat-label>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="filterEntries()">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <div *ngIf="filteredEntries.length > 0; else noEntries" class="history-list">
+            <div *ngFor="let entry of filteredEntries" class="history-item">
+              <div class="entry-time">
+                <span>{{ entry.clockInTime | date:'shortTime' }} - {{ entry.clockOutTime | date:'shortTime' }}   </span>
+                <span class="duration">- Time worked: {{ getFormattedTime(entry.duration) }}</span>
+              </div>
+              <div class="entry-actions">
+                <button mat-icon-button (click)="editEntry(entry)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteEntry(entry)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+          <ng-template #noEntries>
+            <p class="no-entries">No time entries available</p>
+          </ng-template>
+        </mat-card-content>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</div>

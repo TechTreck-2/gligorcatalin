@@ -1,0 +1,94 @@
+.time-tracking {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+:host-context(body.dark-theme) .time-tracking{//what element they target
+  background-color: #121212;//if any parent of this component(body) has the class .dark theme, apply these styles to this element
+  color: #ffffff;
+}
+
+mat-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  transition: background-color 0.3s, color 0.3s;
+}
+:host-context(body.dark-theme) mat-card {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+mat-card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+:host-context(body.dark-theme) mat-card-title {
+  color: #90caf9;
+}
+
+mat-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h2 {
+  margin: 1rem 0;
+  color: #343a40;
+}
+:host-context(body.dark-theme) h2 {
+  color: #ffffff;
+}
+
+button {
+  margin: 0.5rem 0;
+}
+
+.theme-toggle-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.clock-container {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.clock-icon {
+  width: 100px;
+  height: 100px;
+}
+
+// button :disabled {
+//   color: #111;
+// }
+.disabled-button{
+  background-color: #777 !important;//neaparat important pentru override
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+mat-tab-group {
+  width: 100%;
+}
+
+
+mat-tab-label {
+  color: red !important;
+  transition: background-color 0.3s, color 0.3s;
+}
+:host-context(body.dark-theme) mat-tab {
+  background-color: #1e1e1e;
+  color: red !important;
+}

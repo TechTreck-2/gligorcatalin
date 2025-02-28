@@ -1,0 +1,24 @@
+<div class="pto">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>PTO Management</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div>
+          <mat-form-field>
+            <mat-label>Enter PTO Day</mat-label>
+            <input matInput #ptoInput />
+          </mat-form-field>
+          <button mat-raised-button color="accent" (click)="addPto(ptoInput.value)">Add PTO</button>
+  
+          <div *ngIf="ptoDays.length > 0">
+            <h3>Scheduled PTO Days:</h3>
+            <ul>
+              <li *ngFor="let day of ptoDays">{{ day }}</li>
+            </ul>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  

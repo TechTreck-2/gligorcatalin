@@ -1,0 +1,54 @@
+.log-filter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+  }
+  
+  mat-card {
+    width: 100%;
+    max-width: 500px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  mat-card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+  }
+  
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  mat-form-field {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  button {
+    margin: 0.5rem 0;
+  }
+  
+  h3 {
+    margin-top: 1rem;
+    color: #343a40;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  li {
+    background-color: #e9ecef;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 5px;
+    width: 100%;
+    text-align: center;
+  }
