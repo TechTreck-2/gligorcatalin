@@ -1,4 +1,4 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, Renderer2, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -34,6 +34,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
   ],
   templateUrl: './time-tracking.component.html',
   styleUrls: ['./time-tracking.component.scss'],
+  //encapsulation: ViewEncapsulation.None
 })
 export class TimeTrackingComponent implements OnInit {
   totalTimeWorked: number = 0;

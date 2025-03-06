@@ -4,31 +4,47 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-body.dark-theme {
-  background-color: #121212;//background color;
-  color: #ffffff;//text color;
-}
-
 .mat-card {
   transition: background-color 0.3s, color 0.3s;
 }
-
-body.dark-theme .mat-card {
-  background-color: #1e1e1e;
-  color: #ffffff;
-}
-
-body.dark-theme .mat-card-title {
-  color: #90caf9;
-}
-
-body.dark-theme .mat-icon {
-  color: #ffffff;
-}
-
 
 .theme-toggle-button {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+// Consolidated dark theme styles
+body.dark-theme {
+  background-color: #121212;
+  color: #ffffff;
+
+  .mat-card {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .mat-card-title {
+    color: #90caf9;
+  }
+
+  .mat-icon {
+    color: #ffffff;
+  }
+
+  .mat-mdc-tab-group {
+    .mat-mdc-tab-header {
+      .mat-mdc-tab:not(.mat-mdc-tab-active) {//inactiv
+        .mdc-tab__text-label {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      }
+      
+      .mat-mdc-tab.mat-mdc-tab-active {//activ
+        .mdc-tab__text-label {
+          color: red !important;
+        }
+      }
+    }
+  }
 }

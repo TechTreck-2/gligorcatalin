@@ -92,3 +92,7 @@ mat-tab-label {
   background-color: #1e1e1e;
   color: red !important;
 }
+
+:host(body.dark-theme) .mdc-tab__text-label {
+  color: #90caf9 !important;
+}

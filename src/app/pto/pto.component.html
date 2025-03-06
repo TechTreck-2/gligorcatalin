@@ -1,24 +1,80 @@
 <div class="pto">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>PTO Management</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div>
-          <mat-form-field>
-            <mat-label>Enter PTO Day</mat-label>
-            <input matInput #ptoInput />
-          </mat-form-field>
-          <button mat-raised-button color="accent" (click)="addPto(ptoInput.value)">Add PTO</button>
-  
-          <div *ngIf="ptoDays.length > 0">
-            <h3>Scheduled PTO Days:</h3>
-            <ul>
-              <li *ngFor="let day of ptoDays">{{ day }}</li>
-            </ul>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>PTO Management</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="pto-summary">
+        <mat-card class="pto-stats">
+          <div class="stat-container">
+            <div class="stat-item">
+              <h3>Total PTO days</h3>
+              <div class="stat-value">26 days</div>
+            </div>
+            <div class="stat-item">
+              <h3>Used</h3>
+              <div class="stat-value">10 days</div>
+            </div>
+            <div class="stat-item">
+              <h3>Remaining</h3>
+              <div class="stat-value">16 days</div>
+            </div>
           </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-  
+          
+          <div class="progress-section">
+            <mat-progress-bar
+              mode="determinate"
+              [value]="(10/26) * 100"
+              color="primary">
+            </mat-progress-bar>
+            <div class="progress-label">
+              10 of 26 days used (38%)
+            </div>
+          </div>
+        </mat-card>
+      </div>
+
+      <div class="pto-input">
+        <mat-form-field>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="tempDate" placeholder="Choose a date">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <button mat-raised-button color="accent" (click)="openReasonDialog()">Add PTO</button>
+      </div>
+
+      <div class="reason-dialog" *ngIf="showReasonDialog">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Enter PTO Reason</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="fill">
+              <mat-label>Reason</mat-label>
+              <textarea matInput [(ngModel)]="ptoReason" required></textarea>
+            </mat-form-field>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button (click)="showReasonDialog = false">Cancel</button>
+            <button mat-raised-button color="primary" (click)="submitPto()">Submit</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <div *ngIf="ptoDays.length > 0">
+        <h3>Scheduled PTO Days:</h3>
+        <ul class="pto-list">
+          <li *ngFor="let pto of ptoDays">
+            <span class="pto-info">
+              {{pto.ptoDate}}     {{pto.submittedOn}}     Reason: {{pto.reason}}
+            </span>
+            <span class="status-indicator">
+              <span class="status-circle pending"></span>
+              Status: {{pto.status}}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
