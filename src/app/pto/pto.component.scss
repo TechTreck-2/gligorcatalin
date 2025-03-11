@@ -100,3 +100,105 @@ mat-progress-bar {
 .pto-info {
   flex: 1;
 }
+.mat-mdc-card,
+.pto-stats,
+.mat-mdc-form-field,
+.reason-dialog mat-card,
+.status-indicator,
+.progress-label,
+mat-icon {
+  transition: all 0.3s ease;
+}
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+:host-context(body.dark-theme) {
+  .mat-card {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .mat-card-title {
+    color: #90caf9;
+  }
+
+  .status-circle {
+    &.pending {
+      background-color: #ffd700;
+    }
+  }
+}
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+}
+
+:host-context(body.dark-theme) {
+  .mat-mdc-card {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .theme-toggle mat-icon {
+    color: #ffd740; 
+  }
+
+  .theme-toggle mat-icon {
+    &:hover {
+      color: #ffd740;
+    }
+  }
+
+  .mat-mdc-card-title {
+    color: #90caf9;
+  }
+
+  .pto-stats {
+    background-color: #2d2d2d;
+  }
+
+  .status-indicator {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .mat-mdc-form-field {
+    color: white;
+  }
+
+  .reason-dialog mat-card {
+    background-color: #2d2d2d;
+  }
+}

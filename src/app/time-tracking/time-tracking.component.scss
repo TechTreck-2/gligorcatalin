@@ -25,6 +25,12 @@ mat-card {
     color: #ffffff;
   }
 
+:host-context(body.dark-theme) {
+  .theme-toggle mat-icon{
+    color: yellow !important;
+  }
+}
+
 mat-card-title {
   font-size: 1.5rem;
   font-weight: bold;
@@ -91,8 +97,4 @@ mat-tab-label {
 :host-context(body.dark-theme) mat-tab {
   background-color: #1e1e1e;
   color: red !important;
-}
-
-:host(body.dark-theme) .mdc-tab__text-label {
-  color: #90caf9 !important;
 }

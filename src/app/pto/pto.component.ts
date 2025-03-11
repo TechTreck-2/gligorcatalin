@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-
+import { MatIconModule } from '@angular/material/icon';
 
 
 export interface PtoRequest {
@@ -28,6 +28,7 @@ export interface PtoRequest {
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressBarModule,
+    MatIconModule,
   ],
   templateUrl: './pto.component.html',
   styleUrls: ['./pto.component.scss'],
@@ -39,9 +40,43 @@ export class PtoComponent {
   showReasonDialog = false;
   tempDate: Date | null = null;
   ptoReason: string = '';
+  isDarkTheme = false;
 
   openReasonDialog() {
     this.showReasonDialog = true;
+  }
+  
+  constructor() {
+    const savedPtos = localStorage.getItem('ptoDays');//load pto
+    if (savedPtos) {
+      this.ptoDays = JSON.parse(savedPtos);
+      this.usedPtoDays = Math.min(this.ptoDays.length, this.totalPtoDays);
+    }
+    const savedTheme = localStorage.getItem('isDarkTheme');//load theme
+    if (savedTheme) {
+      this.isDarkTheme = JSON.parse(savedTheme);
+      this.applyTheme();
+    }
+  }
+  toggleTheme() {
+    this.isDarkTheme = !this.isDarkTheme;
+    localStorage.setItem('isDarkTheme', JSON.stringify(this.isDarkTheme));
+    this.applyTheme();
+  }
+  private applyTheme() {
+    if (this.isDarkTheme) {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+    }
+  }
+
+  get remainingDays(): number {
+    return this.totalPtoDays - this.usedPtoDays;
+  }
+
+  get progressPercentage(): number {
+    return (this.usedPtoDays / this.totalPtoDays) * 100;
   }
 
   submitPto() {
@@ -65,8 +100,11 @@ export class PtoComponent {
         reason: this.ptoReason,
         status: 'Pending'
       });
-      
-      this.usedPtoDays = Math.min(this.usedPtoDays + 1, this.totalPtoDays);
+
+      this.usedPtoDays = 10+Math.min(this.ptoDays.length, this.totalPtoDays);
+      localStorage.setItem('ptoDays', JSON.stringify(this.ptoDays));
+
+      //this.usedPtoDays = Math.min(this.usedPtoDays + 1, this.totalPtoDays);
       this.showReasonDialog = false;
       this.tempDate = null;
       this.ptoReason = '';

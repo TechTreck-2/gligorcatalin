@@ -2,6 +2,9 @@
   <mat-card>
     <mat-card-header>
       <mat-card-title>PTO Management</mat-card-title>
+      <button button (click)="toggleTheme()" class="theme-toggle">
+        <mat-icon>{{ isDarkTheme ? 'sunny' : 'shield_moon' }}</mat-icon>
+      </button>
     </mat-card-header>
     <mat-card-content>
       <div class="pto-summary">
@@ -9,26 +12,26 @@
           <div class="stat-container">
             <div class="stat-item">
               <h3>Total PTO days</h3>
-              <div class="stat-value">26 days</div>
+              <div class="stat-value">{{totalPtoDays}} days</div>
             </div>
             <div class="stat-item">
               <h3>Used</h3>
-              <div class="stat-value">10 days</div>
+              <div class="stat-value">{{usedPtoDays}} days</div>
             </div>
             <div class="stat-item">
               <h3>Remaining</h3>
-              <div class="stat-value">16 days</div>
+              <div class="stat-value">{{remainingDays}} days</div>
             </div>
           </div>
           
           <div class="progress-section">
             <mat-progress-bar
               mode="determinate"
-              [value]="(10/26) * 100"
+              [value]="progressPercentage"
               color="primary">
             </mat-progress-bar>
             <div class="progress-label">
-              10 of 26 days used (38%)
+              {{usedPtoDays}} of {{totalPtoDays}} days used ({{progressPercentage | number:'1.0-0'}}%)
             </div>
           </div>
         </mat-card>
