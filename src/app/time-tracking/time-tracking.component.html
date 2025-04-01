@@ -61,7 +61,8 @@
             <div *ngFor="let entry of filteredEntries" class="history-item">
               <div class="entry-time">
                 <span>{{ entry.clockInTime | date:'shortTime' }} - {{ entry.clockOutTime | date:'shortTime' }}   </span>
-                <span class="duration">- Time worked: {{ getFormattedTime(entry.duration) }}</span>
+                <span class="duration" *ngIf="entry.durationFormatted">- Time worked: {{ entry.durationFormatted }}</span>
+                <span class="duration" *ngIf="!entry.durationFormatted">- Time worked: {{ getFormattedTime(entry.durationSeconds || entry.duration) }}</span>
               </div>
               <div class="entry-actions">
                 <button mat-icon-button (click)="editEntry(entry)">

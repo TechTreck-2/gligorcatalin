@@ -1,204 +1,295 @@
-.pto-summary {
-  margin-bottom: 20px;
+// General styling
+.pto {
+  padding: 20px;
+  
+  mat-card {
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 }
 
+// Theme toggle button
+.theme-toggle {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  
+  mat-icon {
+    font-size: 24px;
+  }
+}
+
+// PTO Stats card styling
 .pto-stats {
+  padding: 16px;
+  margin: 0 0 20px 0;
   background-color: #f5f5f5;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .stat-container {
   display: flex;
   justify-content: space-around;
   text-align: center;
-}
-
-.stat-item {
-  padding: 10px;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.pto-input {
   margin-bottom: 20px;
+  
+  .stat-item {
+    padding: 0 15px;
+    
+    h3 {
+      margin-bottom: 10px;
+      font-weight: 500;
+      font-size: 16px;
+      color: #666;
+      transition: color 0.3s ease;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      transition: color 0.3s ease;
+    }
+  }
 }
 
 .progress-section {
-  padding: 16px;
-  margin-top: 8px;
-  border-top: 1px solid #eee;
+  margin-top: 15px;
+  
+  .progress-label {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    transition: color 0.3s ease;
+  }
 }
 
-.progress-label {
-  margin-top: 8px;
-  text-align: center;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.7);
+// PTO Input styling
+.pto-input {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 20px 0;
+  
+  mat-form-field {
+    flex: 0 0 200px;
+    max-width: 200px;
+  }
+  
+  .styled-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #66d86a;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 0 20px;
+    height: 48px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transition: all 0.2s ease;
+    margin-top: 4px;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+    
+    &:hover {
+      background-color: #45a049;
+      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 5px rgba(76, 175, 80, 0.3);
+    }
+  }
 }
 
-mat-progress-bar {
-  height: 8px;
-}
-
+// Reason dialog styling - make it a modal popup
 .reason-dialog {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  padding: 20px;
-
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  
   mat-card {
-    min-width: 300px;
+    width: 400px;
+    max-width: 90%;
+    padding: 16px;
+    animation: dialogFadeIn 0.3s ease;
+    
+    mat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .close-button {
+        margin-left: auto;
+      }
+    }
     
     mat-form-field {
       width: 100%;
     }
-
+    
     mat-card-actions {
       display: flex;
       justify-content: flex-end;
+      padding: 8px;
       gap: 8px;
     }
   }
 }
+
+// Add animation for dialog
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// PTO list styling
 .pto-list {
   list-style: none;
   padding: 0;
-
+  margin: 0;
+  
   li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    
+    &:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .pto-info {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      
+      .status-circle {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+        
+        &.pending {
+          background-color: #FFC107;
+        }
+        
+        &.approved {
+          background-color: #4CAF50;
+        }
+        
+        &.rejected {
+          background-color: #F44336;
+        }
+      }
+    }
   }
 }
 
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-.status-circle {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 4px;
-
-  &.pending {
-    background-color: #ffd700;
-  }
-}
-
-.pto-info {
-  flex: 1;
-}
-.mat-mdc-card,
-.pto-stats,
-.mat-mdc-form-field,
-.reason-dialog mat-card,
-.status-indicator,
-.progress-label,
-mat-icon {
-  transition: all 0.3s ease;
-}
-.theme-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-
-  mat-icon {
-    font-size: 24px;
-    height: 24px;
-    width: 24px;
-    transition: color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
+// Comprehensive dark theme support
 :host-context(body.dark-theme) {
-  .mat-card {
-    background-color: #1e1e1e;
-    color: #ffffff;
+  .pto mat-card {
+    background-color: #303030;
+    color: #e0e0e0;
   }
 
   .mat-card-title {
-    color: #90caf9;
+    color: #fff;
   }
-
-  .status-circle {
-    &.pending {
-      background-color: #ffd700;
-    }
-  }
-}
-.theme-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: absolute;
-  right: 16px;
-  top: 16px;
-
-  mat-icon {
-    font-size: 24px;
-    height: 24px;
-    width: 24px;
-  }
-}
-
-:host-context(body.dark-theme) {
-  .mat-mdc-card {
-    background-color: #1e1e1e;
-    color: #ffffff;
-  }
-
-  .theme-toggle mat-icon {
-    color: #ffd740; 
-  }
-
-  .theme-toggle mat-icon {
-    &:hover {
-      color: #ffd740;
-    }
-  }
-
-  .mat-mdc-card-title {
-    color: #90caf9;
-  }
-
+  
   .pto-stats {
-    background-color: #2d2d2d;
+    background-color: #424242;
+    
+    .stat-item {
+      h3 {
+        color: #bbb;
+      }
+      
+      .stat-value {
+        color: #fff;
+      }
+    }
+    
+    .progress-label {
+      color: #bbb;
+    }
   }
-
-  .status-indicator {
+  
+  .styled-button {
+    background-color: #388E3C;
+    
+    &:hover {
+      background-color: #2E7D32;
+    }
+  }
+  
+  // Make dialog background dark
+  .reason-dialog mat-card {
+    background-color: #303030;
+    color: #e0e0e0;
+    
+    mat-card-title {
+      color: #fff;
+    }
+    
+    mat-form-field {
+      // These will be handled by Material's dark theme
+      color: #fff;
+    }
+  }
+  
+  .pto-list li {
+    background-color: #424242;
+    color: #e0e0e0;
+    
+    &:hover {
+      background-color: #494949;
+    }
+  }
+  
+  // Fix form field colors
+  .mat-form-field-label {
     color: rgba(255, 255, 255, 0.7);
   }
-
-  .mat-mdc-form-field {
+  
+  .mat-input-element {
     color: white;
   }
-
-  .reason-dialog mat-card {
-    background-color: #2d2d2d;
+  
+  .mat-form-field-underline {
+    background-color: rgba(255, 255, 255, 0.4);
   }
 }

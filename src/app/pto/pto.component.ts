@@ -79,6 +79,13 @@ export class PtoComponent {
     return (this.usedPtoDays / this.totalPtoDays) * 100;
   }
 
+  closeDialogIfClickedOutside(event: MouseEvent) {
+    // Check if the click was on the backdrop (not on the card)
+    if (event.target === event.currentTarget) {
+      this.showReasonDialog = false;
+    }
+  }
+
   submitPto() {
     if (this.tempDate && this.ptoReason) {
       const ptoDate = this.tempDate.toLocaleDateString('en-GB', {
