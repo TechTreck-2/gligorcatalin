@@ -7,8 +7,7 @@
   }
 }
 
-// Theme toggle button
-.theme-toggle {
+.theme-toggle {//button
   margin-left: auto;
   background: none;
   border: none;
@@ -43,7 +42,7 @@
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
-    justify-content: center; // Center the content horizontally
+    justify-content: center;
 
     mat-icon {
       margin-right: 8px;
@@ -75,10 +74,41 @@
     &:hover {
       background: #f0f0f0;
     }
+    
+    &.pto-entry {
+      background: rgba(244, 67, 54, 0.1);
+      border-left: 4px solid #f44336;
+      
+      &:hover {
+        background: rgba(244, 67, 54, 0.15);
+      }
+    }
+    
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      
+      .log-type-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        
+        &.work {
+          background-color: #2196f3;
+          color: white;
+        }
+        
+        &.pto {
+          background-color: #f44336;
+          color: white;
+        }
+      }
+    }
   }
 }
 
-// Dark theme support
 :host-context(body.dark-theme) {
   .log-filter mat-card {
     background-color: #303030;
@@ -95,6 +125,14 @@
     
     &:hover {
       background-color: #494949;
+    }
+    
+    &.pto-entry {
+      background: rgba(244, 67, 54, 0.15);
+      
+      &:hover {
+        background: rgba(244, 67, 54, 0.2);
+      }
     }
   }
 }

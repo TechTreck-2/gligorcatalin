@@ -8,7 +8,6 @@
     </mat-card-header>
     <mat-card-content>
       <div class="date-filter-container">
-        <!-- Start Date Filter -->
         <mat-form-field appearance="fill">
           <mat-label>Start Date</mat-label>
           <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
@@ -16,7 +15,6 @@
           <mat-datepicker #startPicker></mat-datepicker>
         </mat-form-field>
         
-        <!-- End Date Filter -->
         <mat-form-field appearance="fill">
           <mat-label>End Date</mat-label>
           <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
@@ -24,7 +22,6 @@
           <mat-datepicker #endPicker></mat-datepicker>
         </mat-form-field>
         
-        <!-- Sort Order -->
         <mat-form-field appearance="fill">
           <mat-label>Sort Order</mat-label>
           <select matNativeControl [(ngModel)]="sortOrder">
@@ -33,30 +30,37 @@
           </select>
         </mat-form-field>
         
-        <!-- Apply Button -->
         <button mat-raised-button color="primary" class="apply-filter-button" (click)="filterLogs()">
           <mat-icon>filter_list</mat-icon>
           <span>Apply Filters</span>
         </button>
       </div>
 
-      <!-- Display Results -->
       <div *ngIf="filteredLogs.length > 0" class="logs-container">
-        <div *ngFor="let log of filteredLogs" class="log-entry">
-          <div>Date: {{log.date | date:'shortDate'}}</div>
-          <div>Time: {{log.startTime}} - {{log.endTime}}</div>
-          <div>Duration: 
-            <!-- Use formatted duration if available -->
-            <span *ngIf="log.durationFormatted">{{log.durationFormatted}}</span>
-            <!-- Fallback for older entries -->
-            <span *ngIf="!log.durationFormatted && log.durationSeconds">{{formatSeconds(log.durationSeconds)}}</span>
-            <!-- Ultimate fallback -->
-            <span *ngIf="!log.durationFormatted && !log.durationSeconds">{{formatSeconds(log.duration)}}</span>
+        <div *ngFor="let log of filteredLogs" class="log-entry" [ngClass]="{'pto-entry': log.type === 'PTO'}">
+          <div class="log-header">
+            <div class="log-date">Date: {{log.date | date:'shortDate'}}</div>
+            <div class="log-type-badge" [ngClass]="log.type.toLowerCase()">
+              {{log.type}}
+            </div>
+          </div>
+          
+          <div *ngIf="log.type === 'WORK'">
+            <div class="log-detail">Time: {{log.startTime}} - {{log.endTime}}</div>
+            <div class="log-detail">Duration: 
+              <span *ngIf="log.durationFormatted">{{log.durationFormatted}}</span>
+              <span *ngIf="!log.durationFormatted && log.durationSeconds">{{formatSeconds(log.durationSeconds)}}</span>
+              <span *ngIf="!log.durationFormatted && !log.durationSeconds">{{formatSeconds(log.duration)}}</span>
+            </div>
+          </div>
+          
+          <div *ngIf="log.type === 'PTO'">
+            <div class="log-detail pto-reason">Reason: {{log.description}}</div>
+            <div class="log-detail pto-status">Status: {{log.status}}</div>
           </div>
         </div>
       </div>
       
-      <!-- No results message -->
       <div *ngIf="filteredLogs.length === 0" class="no-results">
         No logs found for the selected date range
       </div>

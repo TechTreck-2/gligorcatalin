@@ -68,13 +68,10 @@ export class TimeTrackingComponent implements OnInit {
     this.selectedDate = new Date();
     this.selectedDate.setHours(0, 0, 0, 0);
     
-    // Load stored entries
     this.loadEntries();
     
-    // Filter entries for today's date
     this.filterEntries();
     
-    // Restore other state
     this.restoreTimerState();
     this.restoreTheme();
   }
@@ -88,11 +85,11 @@ export class TimeTrackingComponent implements OnInit {
   // }
 
   startTimer() {
-    this.clockInTime = new Date();  //Record the clock-in time
+    this.clockInTime = new Date();//Record the clock-in time
     this.totalTimeWorked = 0;
     this.isTimerRunning = true;
     this.isPaused = false;
-    this.clockOutTime = null;  //Reset the clock-out time
+    this.clockOutTime = null;//Reset the clock-out time
     this.timer = setInterval(() => {
       this.totalTimeWorked++;
     }, 1000);
@@ -101,7 +98,7 @@ export class TimeTrackingComponent implements OnInit {
   resumeTimer() {
     this.isTimerRunning = true;
     this.isPaused = false;
-    this.clockOutTime = null;  // Reset the clock-out time
+    this.clockOutTime = null;//Reset the clock-out time
     this.timer = setInterval(() => {
       this.totalTimeWorked++;
     }, 1000);
@@ -110,7 +107,7 @@ export class TimeTrackingComponent implements OnInit {
   stopTimer() {
     this.isTimerRunning = false;
     this.isPaused = true;
-    this.clockOutTime = new Date();  // Record the clock-out time
+    this.clockOutTime = new Date();//Record the clock-out time
     this.saveTimerState();
     clearInterval(this.timer);
   }
@@ -150,8 +147,7 @@ export class TimeTrackingComponent implements OnInit {
     }
 }
 
-  private normalizeDate(date: Date): string {
-    // Create a new date at midnight in local timezone
+  private normalizeDate(date: Date): string {//Create new date at midnight
     const normalized = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     return normalized.toISOString().split('T')[0];
 }
@@ -163,9 +159,8 @@ export class TimeTrackingComponent implements OnInit {
     const newEntry = {
       id: Date.now().toString(),
       date: this.normalizeDate(new Date()),
-      // Store both formatted and raw seconds
       durationSeconds: this.totalTimeWorked,
-      duration: this.totalTimeWorked, // Keep for backward compatibility
+      duration: this.totalTimeWorked,
       durationFormatted: this.formatDuration(this.totalTimeWorked),
       startTime: this.clockInTime?.toLocaleTimeString(),
       endTime: this.clockOutTime?.toLocaleTimeString(),
@@ -195,7 +190,7 @@ export class TimeTrackingComponent implements OnInit {
     const timerState = localStorage.getItem('timerState');
     if (timerState) {
       const state = JSON.parse(timerState);
-      this.totalTimeWorked = Number(state.totalTimeWorked) || 0;  // Ensure it's a number
+      this.totalTimeWorked = Number(state.totalTimeWorked) || 0;//Ensure it is a number
       this.isTimerRunning = state.isTimerRunning;
       this.clockInTime = state.clockInTime ? new Date(state.clockInTime) : null;
       this.clockOutTime = state.clockOutTime ? new Date(state.clockOutTime) : null;
@@ -253,7 +248,6 @@ export class TimeTrackingComponent implements OnInit {
   
   filterEntries() {
     if (this.selectedDate) {
-        // Format selected date as YYYY-MM-DD
         const selectedDateStr = new Date(this.selectedDate)
             .toISOString()
             .split('T')[0];
@@ -261,7 +255,6 @@ export class TimeTrackingComponent implements OnInit {
         console.log('Selected date:', selectedDateStr);
 
         this.filteredEntries = this.timeEntries.filter(entry => {
-            // Convert entry date string to same format if it exists
             const entryDateStr = entry.date || 
                 (entry.clockInTime ? new Date(entry.clockInTime).toISOString().split('T')[0] : null);
 

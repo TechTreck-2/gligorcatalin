@@ -15,10 +15,11 @@ interface LogEntry {
   type: 'WORK' | 'PTO';
   startTime?: string;
   endTime?: string;
-  duration: number; // Make this required
-  durationSeconds?: number; // Add this property
-  durationFormatted?: string; // Add this property
+  duration: number;
+  durationSeconds?: number;
+  durationFormatted?: string;
   description?: string;
+  status?: string;
 }
 
 @Component({
@@ -49,14 +50,13 @@ export class LogFilterComponent {
   private renderer = inject(Renderer2);
 
   constructor() {
-    // Initialize with today's date
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     this.startDate = today;
     this.endDate = today;
 
     this.isDarkTheme = localStorage.getItem('theme') === 'dark';
-    this.applyTheme(); // Apply theme on init
+    this.applyTheme(); 
   }
 
   toggleTheme() {
@@ -71,7 +71,6 @@ export class LogFilterComponent {
       this.renderer.removeClass(document.body, 'dark-theme');
     }
   }
-  // Add this method to format seconds properly
   formatSeconds(seconds: number): string {
     if (seconds === undefined || seconds === null || isNaN(seconds)) {
       return '0s';
@@ -95,48 +94,63 @@ export class LogFilterComponent {
       this.snackBar.open('Please select both start and end dates', 'Close', { duration: 3000 });
       return;
     }
-
-    console.log('Filtering for dates:', {
-      start: this.startDate.toISOString(),
-      end: this.endDate.toISOString()
-    });
-
-    // Get stored entries
-    const storedEntries = JSON.parse(localStorage.getItem('timeEntries') || '[]');
-    console.log('All stored entries:', storedEntries);
-
+  
+    const storedEntries = JSON.parse(localStorage.getItem('timeEntries') || '[]');// Get stored time entries
+    
+    const ptoDays = JSON.parse(localStorage.getItem('ptoDays') || '[]');// Get stored PTO entries
+    
     const startStr = this.startDate.toISOString().split('T')[0];
     const endStr = this.endDate.toISOString().split('T')[0];
-
-    // Filter entries
-    const logs = storedEntries.filter((entry: any) => {
+  
+    const timeEntries = storedEntries.filter((entry: any) => { //Filter time entries
       if (!entry.date) return false;
-      const entryStr = new Date(entry.date).toISOString().split('T')[0];
-      console.log(`Comparing entry date ${entryStr} with range ${startStr} - ${endStr}`);
-      return entryStr >= startStr && entryStr <= endStr;
+      const entryDateStr = new Date(entry.date).toISOString().split('T')[0];
+      return entryDateStr >= startStr && entryDateStr <= endStr;
     });
-
-    console.log('Filtered logs:', logs);
-
+  
+    const filteredPtoDays = ptoDays.filter((pto: any) => {
+      const ptoParts = pto.ptoDate.split('/'); 
+      const ptoDateStr = `${ptoParts[2]}-${ptoParts[1]}-${ptoParts[0]}`;
+      return ptoDateStr >= startStr && ptoDateStr <= endStr;
+    });
+  
+    const mergedTimeline: LogEntry[] = [];
     
-    // Map to LogEntry type
-    this.filteredLogs = logs.map((entry: any) => ({
-      date: new Date(entry.date),
-      type: 'WORK',
-      startTime: entry.startTime || '',
-      endTime: entry.endTime || '',
-      duration: entry.duration || 0,
-      durationSeconds: entry.durationSeconds || entry.duration || 0, // Add this property
-      durationFormatted: entry.durationFormatted || '', // Add this property
-      description: entry.description || ''
-    }));
-
-    // Sort logs
-    this.filteredLogs.sort((a, b) => {
-      const comparison = a.date.getTime() - b.date.getTime();
-      return this.sortOrder === 'asc' ? comparison : -comparison;
+    timeEntries.forEach((entry: any) => {
+      mergedTimeline.push({
+        date: new Date(entry.date),
+        type: 'WORK',
+        startTime: entry.startTime || '',
+        endTime: entry.endTime || '',
+        duration: entry.duration || 0,
+        durationSeconds: entry.durationSeconds || entry.duration || 0,
+        durationFormatted: entry.durationFormatted || '',
+        description: entry.description || ''
+      });
     });
-
-    console.log('Final filtered logs:', this.filteredLogs);
+    
+    filteredPtoDays.forEach((pto: any) => {
+      const ptoParts = pto.ptoDate.split('/');
+      const ptoDate = new Date(`${ptoParts[2]}-${ptoParts[1]}-${ptoParts[0]}`);
+      
+      mergedTimeline.push({
+        date: ptoDate,
+        type: 'PTO',
+        startTime: 'All Day',
+        endTime: '',
+        duration: 8 * 3600, //8 hour workday
+        durationFormatted: '8h 0m 0s',
+        description: pto.reason,
+        status: pto.status
+      });
+    });
+    
+    if (this.sortOrder === 'asc') {//sorting
+      mergedTimeline.sort((a, b) => a.date.getTime() - b.date.getTime());
+    } else {
+      mergedTimeline.sort((a, b) => b.date.getTime() - a.date.getTime());
+    }
+    
+    this.filteredLogs = mergedTimeline;
   }
 }

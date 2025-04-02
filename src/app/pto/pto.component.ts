@@ -80,7 +80,7 @@ export class PtoComponent {
   }
 
   closeDialogIfClickedOutside(event: MouseEvent) {
-    // Check if the click was on the backdrop (not on the card)
+    // Check if the click was not on the card
     if (event.target === event.currentTarget) {
       this.showReasonDialog = false;
     }
