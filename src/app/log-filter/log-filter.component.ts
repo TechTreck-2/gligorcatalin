@@ -9,6 +9,10 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { LogApiService } from '../log-api.service'; // Import the service
+import { forkJoin } from 'rxjs'; // Add this import
+import { HttpClientModule } from '@angular/common/http';
+
 
 interface LogEntry {
   date: Date;
@@ -19,7 +23,7 @@ interface LogEntry {
   durationSeconds?: number;
   durationFormatted?: string;
   description?: string;
-  status?: string;
+  statuss?: string;
 }
 
 @Component({
@@ -31,6 +35,7 @@ interface LogEntry {
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    //HttpClientModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
@@ -38,6 +43,7 @@ interface LogEntry {
   ],
   templateUrl: './log-filter.component.html',
   styleUrls: ['./log-filter.component.scss'],
+  //providers: [LogApiService] // Provide the service here or in the module
 })
 export class LogFilterComponent {
   startDate: Date | null;
@@ -45,9 +51,11 @@ export class LogFilterComponent {
   sortOrder: 'asc' | 'desc' = 'asc';
   filteredLogs: LogEntry[] = [];
   isDarkTheme: boolean = false;
-  
+  loading: boolean = false;  // Add loading state
+
   private readonly snackBar = inject(MatSnackBar);
   private renderer = inject(Renderer2);
+  private logApi = inject(LogApiService);
 
   constructor() {
     const today = new Date();
@@ -56,7 +64,7 @@ export class LogFilterComponent {
     this.endDate = today;
 
     this.isDarkTheme = localStorage.getItem('theme') === 'dark';
-    this.applyTheme(); 
+    this.applyTheme();
   }
 
   toggleTheme() {
@@ -75,11 +83,9 @@ export class LogFilterComponent {
     if (seconds === undefined || seconds === null || isNaN(seconds)) {
       return '0s';
     }
-    
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    
     if (hours > 0) {
       return `${hours}h ${minutes}m ${remainingSeconds}s`;
     } else if (minutes > 0) {
@@ -94,63 +100,76 @@ export class LogFilterComponent {
       this.snackBar.open('Please select both start and end dates', 'Close', { duration: 3000 });
       return;
     }
-  
-    const storedEntries = JSON.parse(localStorage.getItem('timeEntries') || '[]');// Get stored time entries
-    
-    const ptoDays = JSON.parse(localStorage.getItem('ptoDays') || '[]');// Get stored PTO entries
-    
+
     const startStr = this.startDate.toISOString().split('T')[0];
     const endStr = this.endDate.toISOString().split('T')[0];
-  
-    const timeEntries = storedEntries.filter((entry: any) => { //Filter time entries
-      if (!entry.date) return false;
-      const entryDateStr = new Date(entry.date).toISOString().split('T')[0];
-      return entryDateStr >= startStr && entryDateStr <= endStr;
+
+    this.loading = true;
+
+    forkJoin({
+      timeEntries: this.logApi.getTimeEntries(startStr, endStr),
+      ptoDays: this.logApi.getPtoDays(startStr, endStr)
+    }).subscribe({
+      next: (results) => {
+        // Log the raw results for debugging
+        console.log('Raw time entries response:', results.timeEntries);
+        console.log('Raw PTO days response:', results.ptoDays);
+
+        // Extract data from Strapi v4 response structure
+        const timeEntries = results.timeEntries?.data || [];
+        const ptoDays = results.ptoDays?.data || [];
+        
+        const mergedTimeline: LogEntry[] = [];
+
+        // Process time entries
+        timeEntries.forEach((entry: any) => {
+          // Strapi v4 returns attributes object
+          const data = entry.attributes || entry;
+          
+          mergedTimeline.push({
+            date: new Date(data.date),
+            type: 'WORK',
+            startTime: data.startTime || '',
+            endTime: data.endTime || '',
+            duration: data.duration || 0,
+            durationSeconds: data.durationSeconds || data.duration || 0,
+            durationFormatted: data.durationFormatted || '',
+            description: data.description || '',
+            statuss: data.statuss || 'Completed'
+          });
+        });
+
+        // Process PTO days
+        ptoDays.forEach((pto: any) => {
+          // Strapi v4 returns attributes object
+          const data = pto.attributes || pto;
+          
+          mergedTimeline.push({
+            date: new Date(data.ptoDate),
+            type: 'PTO',
+            startTime: 'All Day',
+            endTime: '',
+            duration: 8 * 3600, // 8 hour workday in seconds
+            durationFormatted: '8h 0m 0s',
+            description: data.reason,
+            statuss: data.statuss
+          });
+        });
+
+        if (this.sortOrder === 'asc') {
+          mergedTimeline.sort((a, b) => a.date.getTime() - b.date.getTime());
+        } else {
+          mergedTimeline.sort((a, b) => b.date.getTime() - a.date.getTime());
+        }
+
+        this.filteredLogs = mergedTimeline;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading data:', err);
+        this.snackBar.open('Error fetching logs from server', 'Close', { duration: 3000 });
+        this.loading = false;
+      }
     });
-  
-    const filteredPtoDays = ptoDays.filter((pto: any) => {
-      const ptoParts = pto.ptoDate.split('/'); 
-      const ptoDateStr = `${ptoParts[2]}-${ptoParts[1]}-${ptoParts[0]}`;
-      return ptoDateStr >= startStr && ptoDateStr <= endStr;
-    });
-  
-    const mergedTimeline: LogEntry[] = [];
-    
-    timeEntries.forEach((entry: any) => {
-      mergedTimeline.push({
-        date: new Date(entry.date),
-        type: 'WORK',
-        startTime: entry.startTime || '',
-        endTime: entry.endTime || '',
-        duration: entry.duration || 0,
-        durationSeconds: entry.durationSeconds || entry.duration || 0,
-        durationFormatted: entry.durationFormatted || '',
-        description: entry.description || ''
-      });
-    });
-    
-    filteredPtoDays.forEach((pto: any) => {
-      const ptoParts = pto.ptoDate.split('/');
-      const ptoDate = new Date(`${ptoParts[2]}-${ptoParts[1]}-${ptoParts[0]}`);
-      
-      mergedTimeline.push({
-        date: ptoDate,
-        type: 'PTO',
-        startTime: 'All Day',
-        endTime: '',
-        duration: 8 * 3600, //8 hour workday
-        durationFormatted: '8h 0m 0s',
-        description: pto.reason,
-        status: pto.status
-      });
-    });
-    
-    if (this.sortOrder === 'asc') {//sorting
-      mergedTimeline.sort((a, b) => a.date.getTime() - b.date.getTime());
-    } else {
-      mergedTimeline.sort((a, b) => b.date.getTime() - a.date.getTime());
-    }
-    
-    this.filteredLogs = mergedTimeline;
   }
 }

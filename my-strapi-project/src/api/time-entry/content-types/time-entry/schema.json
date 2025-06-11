@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "time_entries",
+  "info": {
+    "singularName": "time-entry",
+    "pluralName": "time-entries",
+    "displayName": "time-entry"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "WORK",
+        "PTO"
+      ]
+    },
+    "startTime": {
+      "type": "string"
+    },
+    "endTime": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "decimal",
+      "required": true
+    },
+    "durationSeconds": {
+      "type": "decimal"
+    },
+    "durationFormatted": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "statuss": {
+      "type": "string"
+    }
+  }
+}

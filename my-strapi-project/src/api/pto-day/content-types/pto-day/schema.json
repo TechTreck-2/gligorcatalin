@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pto_days",
+  "info": {
+    "singularName": "pto-day",
+    "pluralName": "pto-days",
+    "displayName": "pto-day"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ptoDate": {
+      "type": "date",
+      "required": true
+    },
+    "submittedOn": {
+      "type": "datetime",
+      "required": true
+    },
+    "reason": {
+      "type": "string",
+      "required": true
+    },
+    "statuss": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ]
+    }
+  }
+}

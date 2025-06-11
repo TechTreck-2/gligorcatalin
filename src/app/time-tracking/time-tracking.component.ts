@@ -1,4 +1,4 @@
-import { Component, OnInit, Renderer2, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Renderer2, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -6,14 +6,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { inject } from '@angular/core';
-
+import { MatDialogModule } from '@angular/material/dialog';
+import { LogApiService } from '../log-api.service';
 
 @Component({
   selector: 'app-time-tracking',
@@ -26,7 +25,7 @@ import { inject } from '@angular/core';
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    HttpClientModule,
+    //HttpClientModule,
     MatSnackBarModule,
     MatIconModule,
     MatButtonModule,
@@ -35,9 +34,7 @@ import { inject } from '@angular/core';
   ],
   templateUrl: './time-tracking.component.html',
   styleUrls: ['./time-tracking.component.scss'],
-  //encapsulation: ViewEncapsulation.None
 })
-
 export class TimeTrackingComponent implements OnInit {
   totalTimeWorked: number = 0;
   isTimerRunning: boolean = false;
@@ -45,51 +42,32 @@ export class TimeTrackingComponent implements OnInit {
   clockInTime: Date | null = null;
   clockOutTime: Date | null = null;
   isPaused: boolean = false;
-  data: any;
   isDarkTheme: boolean = false;
   selectedDate: Date = new Date();
   timeEntries: any[] = [];
   filteredEntries: any[] = [];
-
-  //constructor(private http: HttpClient, private snackBar: MatSnackBar, private renderer: Renderer2, private dialog: MatDialog) {}
-  // private http!: HttpClient;//!-assures that the variable is not null
-  // private snackBar!: MatSnackBar;
-  // private renderer!: Renderer2;
-  // private dialog!: MatDialog;
+  loading: boolean = false;
 
   private readonly renderer = inject(Renderer2);
-  private readonly http = inject(HttpClient);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly dialog = inject(MatDialog);
+  private readonly logApi = inject(LogApiService);
 
   ngOnInit() {
-    //this.fetchData();
-    //this.initDep();
     this.selectedDate = new Date();
     this.selectedDate.setHours(0, 0, 0, 0);
-    
+
     this.loadEntries();
-    
     this.filterEntries();
-    
     this.restoreTimerState();
     this.restoreTheme();
   }
 
-  // fetchData() {
-  //   this.http.get<any[]>('https://jsonplaceholder.typicode.com/users')
-  //     .subscribe((response: any[]) => {
-  //       this.data = response;
-  //       console.log(this.data);
-  //     });
-  // }
-
   startTimer() {
-    this.clockInTime = new Date();//Record the clock-in time
+    this.clockInTime = new Date();
     this.totalTimeWorked = 0;
     this.isTimerRunning = true;
     this.isPaused = false;
-    this.clockOutTime = null;//Reset the clock-out time
+    this.clockOutTime = null;
     this.timer = setInterval(() => {
       this.totalTimeWorked++;
     }, 1000);
@@ -98,7 +76,7 @@ export class TimeTrackingComponent implements OnInit {
   resumeTimer() {
     this.isTimerRunning = true;
     this.isPaused = false;
-    this.clockOutTime = null;//Reset the clock-out time
+    this.clockOutTime = null;
     this.timer = setInterval(() => {
       this.totalTimeWorked++;
     }, 1000);
@@ -107,7 +85,7 @@ export class TimeTrackingComponent implements OnInit {
   stopTimer() {
     this.isTimerRunning = false;
     this.isPaused = true;
-    this.clockOutTime = new Date();//Record the clock-out time
+    this.clockOutTime = new Date();
     this.saveTimerState();
     clearInterval(this.timer);
   }
@@ -137,7 +115,6 @@ export class TimeTrackingComponent implements OnInit {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    
     if (hours > 0) {
         return `${hours}h ${minutes}m ${remainingSeconds}s`;
     } else if (minutes > 0) {
@@ -145,38 +122,58 @@ export class TimeTrackingComponent implements OnInit {
     } else {
         return `${remainingSeconds}s`;
     }
-}
+  }
 
-  private normalizeDate(date: Date): string {//Create new date at midnight
+  private normalizeDate(date: Date): string {
     const normalized = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     return normalized.toISOString().split('T')[0];
-}
+  }
 
-  saveAndShowSnackBar() {
-    this.saveTimerState();
-    const entries = JSON.parse(localStorage.getItem('timeEntries') || '[]');
-    
-    const newEntry = {
-      id: Date.now().toString(),
-      date: this.normalizeDate(new Date()),
-      durationSeconds: this.totalTimeWorked,
-      duration: this.totalTimeWorked,
-      durationFormatted: this.formatDuration(this.totalTimeWorked),
-      startTime: this.clockInTime?.toLocaleTimeString(),
-      endTime: this.clockOutTime?.toLocaleTimeString(),
-      clockInTime: this.clockInTime?.toISOString(),
-      clockOutTime: this.clockOutTime?.toISOString()
-    };
+ saveAndShowSnackBar() {
+  this.saveTimerState();
 
-    entries.push(newEntry);
-    localStorage.setItem('timeEntries', JSON.stringify(entries));
-    this.loadEntries();
-    this.filterEntries();
+  // Convert date to correct format (YYYY-MM-DD)
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0]; // Just the date part
 
-    // const hours = Math.floor(this.totalTimeWorked / 3600);
-    // const minutes = Math.floor((this.totalTimeWorked % 3600) / 60);
-    // const formattedTime = `${hours} hours and ${minutes} minutes`;
-    this.showSnackBar(`Timer state has been successfully registered! You have worked for ${newEntry.duration}`);
+  // Make sure duration is a valid number (required field)
+  const durationValue = isNaN(this.totalTimeWorked) ? 0 : this.totalTimeWorked;
+
+  // Create a time entry with EXACTLY the fields from your schema
+  const newEntry = {
+    date: formattedDate,  // required
+    type: "WORK",         // required enum
+    startTime: this.clockInTime ? this.clockInTime.toLocaleTimeString() : "",
+    endTime: this.clockOutTime ? this.clockOutTime.toLocaleTimeString() : "",
+    duration: durationValue,  // required number 
+    durationSeconds: durationValue, // optional number
+    durationFormatted: this.getFormattedTime(durationValue), // text
+    description: `Worked for ${this.getFormattedTime(durationValue)}`, // text
+    statuss: "Pending"  // text
+  };
+
+  // Log the entry for debugging
+  console.log('Sending time entry:', newEntry);
+
+  this.logApi.createTimeEntry(newEntry).subscribe({
+    next: (response) => {
+      console.log('Success response:', response);
+      this.loadEntries();
+      this.filterEntries();
+      this.resetTimer(); // Reset timer after successful save
+      this.showSnackBar(`Timer state has been successfully registered! You have worked for ${this.getFormattedTime(durationValue)}`);
+    },
+    error: (err) => {
+      console.error('Error saving time entry:', err);
+      if (err.error && err.error.error) {
+        console.error('Specific error details:', err.error.error);
+      }
+      
+      // Show more detailed error message
+      const errorMsg = err.error?.error?.message || err.message || 'Unknown error';
+      this.showSnackBar(`Failed to save time entry: ${errorMsg}`);
+    }
+  });
 }
 
   showSnackBar(message: string) {
@@ -190,7 +187,7 @@ export class TimeTrackingComponent implements OnInit {
     const timerState = localStorage.getItem('timerState');
     if (timerState) {
       const state = JSON.parse(timerState);
-      this.totalTimeWorked = Number(state.totalTimeWorked) || 0;//Ensure it is a number
+      this.totalTimeWorked = Number(state.totalTimeWorked) || 0;
       this.isTimerRunning = state.isTimerRunning;
       this.clockInTime = state.clockInTime ? new Date(state.clockInTime) : null;
       this.clockOutTime = state.clockOutTime ? new Date(state.clockOutTime) : null;
@@ -202,22 +199,22 @@ export class TimeTrackingComponent implements OnInit {
         }, 1000);
       }
     }
-}
+  }
 
   getFormattedTime(seconds: number): string {
     const totalSeconds = Number(seconds);
     if (isNaN(totalSeconds)) return '00:00:00';
-    
+
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const remainingSeconds = totalSeconds % 60;
-    
+
     const paddedHours = hours < 10 ? '0' + hours : hours;
     const paddedMinutes = minutes < 10 ? '0' + minutes : minutes;
     const paddedSeconds = remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds;
-    
+
     return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
-}
+  }
 
   restoreTheme() {
     const timerState = localStorage.getItem('timerState');
@@ -230,7 +227,6 @@ export class TimeTrackingComponent implements OnInit {
         this.renderer.addClass(document.body, 'dark-theme');
       }
     }
-    
   }
 
   toggleTheme() {
@@ -242,51 +238,60 @@ export class TimeTrackingComponent implements OnInit {
     }
     localStorage.setItem('theme', this.isDarkTheme ? 'dark' : 'light');
   }
-  loadEntries(){
-    this.timeEntries=JSON.parse(localStorage.getItem('timeEntries') || '[]');
+
+  loadEntries() {
+    this.loading = true;
+    this.logApi.getTimeEntries().subscribe({
+      next: (response) => {
+        const raw = response.data || response;
+        // Strapi v4 returns an array in `data`
+        this.timeEntries = (raw || []).map((item: any) => ({
+          ...item.attributes,
+          id: item.id,
+        }));
+        this.loading = false;
+        this.filterEntries();
+      },
+      error: () => {
+        this.timeEntries = [];
+        this.loading = false;
+      }
+    });
   }
-  
+
   filterEntries() {
     if (this.selectedDate) {
-        const selectedDateStr = new Date(this.selectedDate)
-            .toISOString()
-            .split('T')[0];
-        
-        console.log('Selected date:', selectedDateStr);
+      const selectedDateStr = new Date(this.selectedDate)
+        .toISOString()
+        .split('T')[0];
 
-        this.filteredEntries = this.timeEntries.filter(entry => {
-            const entryDateStr = entry.date || 
-                (entry.clockInTime ? new Date(entry.clockInTime).toISOString().split('T')[0] : null);
-
-            if (!entryDateStr) return false;
-
-            console.log('Comparing dates:', {
-                selected: selectedDateStr,
-                entry: entryDateStr,
-                matches: entryDateStr === selectedDateStr
-            });
-
-            return entryDateStr === selectedDateStr;
-        });
-
-        console.log('Filtered entries:', this.filteredEntries);
+      this.filteredEntries = this.timeEntries.filter(entry => {
+        const entryDateStr = entry.date ||
+          (entry.clockInTime ? new Date(entry.clockInTime).toISOString().split('T')[0] : null);
+        return entryDateStr === selectedDateStr;
+      });
     } else {
-        this.filteredEntries = [];
+      this.filteredEntries = [];
     }
-}
-  
-  editEntry(entry: any){
-    //console.log('test', entry);
-    this.showSnackBar('Nimic deocamdata');
   }
-  
-  deleteEntry(entry:any){
-    const index = this.timeEntries.findIndex(e => e.id === entry.id);
-  if (index !== -1) {
-    this.timeEntries.splice(index, 1);
-    localStorage.setItem('timeEntries', JSON.stringify(this.timeEntries));
-    this.filterEntries(); //Refresh filtered list
-    this.showSnackBar('Entry deleted successfully');
+
+  editEntry(entry: any) {
+    this.showSnackBar('Edit not implemented yet');
   }
+
+  deleteEntry(entry: any) {
+    if (!entry.id) {
+      this.showSnackBar('Entry ID missing!');
+      return;
+    }
+    this.logApi.deleteTimeEntry(entry.id).subscribe({
+      next: () => {
+        this.loadEntries();
+        this.showSnackBar('Entry deleted successfully');
+      },
+      error: () => {
+        this.showSnackBar('Failed to delete entry!');
+      }
+    });
   }
 }

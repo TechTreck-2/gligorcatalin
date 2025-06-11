@@ -29,14 +29,14 @@
             <p *ngIf="clockInTime">Clocked In: {{ clockInTime | date:'shortTime' }}</p>
             <p *ngIf="clockOutTime">Clocked Out: {{ clockOutTime | date:'shortTime' }}</p>
           </div>
-          <div *ngIf="data">
+          <!-- <div *ngIf="data">
             <h2>Fetched Data</h2>
             <ul>
               <li *ngFor="let item of data">
                 {{ item.name }} - {{ item.email }}
               </li>
             </ul>
-          </div>
+          </div> -->
           <button mat-raised-button color="primary" (click)="startTimer()" [disabled]="isTimerRunning" [ngClass] = "{'disabled-button': isTimerRunning}">Start Timer</button>
           <button mat-raised-button color="warn" (click)="stopTimer()" [disabled]="!isTimerRunning" [ngClass] = "{'disabled-button': !isTimerRunning}">Stop Timer</button>
           <button mat-raised-button color="accent" (click)="resumeTimer()" *ngIf="!isTimerRunning && isPaused">Resume Timer</button>
