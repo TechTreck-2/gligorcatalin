@@ -65,7 +65,6 @@ export class PtoComponent {
     this.loading = true;
     this.logApi.getPtoDays().subscribe({
       next: (response) => {
-        // Strapi v4+ returns data as { data: [...] }
         const raw = response.data || response;
         this.ptoDays = raw.map((item: any) => ({
           ptoDate: item.attributes?.ptoDate || item.ptoDate,
@@ -117,10 +116,10 @@ export class PtoComponent {
     return;
   }
 
-  // Format the ptoDate as YYYY-MM-DD (required date field)
+  // Format the ptoDate as YYYY-MM-DD
   const formattedPtoDate = this.tempDate.toISOString().split('T')[0];
   
-  // Format submittedOn as ISO string (required datetime field)
+  // Format submittedOn as ISO string
   const submittedOnDateTime = new Date().toISOString();
 
   // Create PTO request with the exact fields from your schema
