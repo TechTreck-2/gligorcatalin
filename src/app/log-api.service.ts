@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE } from '../api-base';
 
 export interface LogEntry {
   date: Date;
@@ -25,9 +26,9 @@ export interface PtoRequest {
   providedIn: 'root'
 })
 export class LogApiService {
-  private logsUrl = 'http://localhost:1337/api/logs';
-  private timeEntriesUrl = 'http://localhost:1337/api/time-entries';
-  private ptoDaysUrl = 'http://localhost:1337/api/pto-days';
+  private logsUrl = `${API_BASE}/api/logs`;
+  private timeEntriesUrl = `${API_BASE}/api/time-entries`;
+  private ptoDaysUrl = `${API_BASE}/api/pto-days`;
 
   constructor(private http: HttpClient) {}
 
@@ -75,19 +76,19 @@ export class LogApiService {
   }
 
   createTimeEntry(entry: any): Observable<any> {
-  // Add the required type field if not present
-  if (!entry.type) {
-    entry.type = 'WORK';
+    // Add the required type field if not present
+    if (!entry.type) {
+      entry.type = 'WORK';
+    }
+
+    // Add the status field if not present
+    if (!entry.statuss) {
+      entry.statuss = 'Pending';
+    }
+
+    console.log('Sending to API:', { data: entry });
+    return this.http.post<any>(this.timeEntriesUrl, { data: entry });
   }
-  
-  // Add the status field if not present
-  if (!entry.statuss) {
-    entry.statuss = 'Pending';
-  }
-  
-  console.log('Sending to API:', { data: entry });
-  return this.http.post<any>(this.timeEntriesUrl, { data: entry });
-}
 
   deleteTimeEntry(id: number): Observable<any> {
     return this.http.delete<any>(`${this.timeEntriesUrl}/${id}`);
