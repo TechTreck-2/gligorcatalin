@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -8,16 +8,9 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
-import { LogApiService, LogEntry } from '../log-api.service'; // Adjust path if needed
 import { HttpClientModule } from '@angular/common/http';
-
-
-export interface PtoRequest {
-  ptoDate: string;
-  submittedOn: string;
-  reason: string;
-  statuss: 'Pending' | 'Approved' | 'Rejected';
-}
+import { PtoService, PtoRequest } from './pto.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-pto',
@@ -36,8 +29,9 @@ export interface PtoRequest {
   ],
   templateUrl: './pto.component.html',
   styleUrls: ['./pto.component.scss'],
+  providers: [PtoService] // <-- Add this line if you still get injection errors
 })
-export class PtoComponent {
+export class PtoComponent implements OnInit, OnDestroy {
   totalPtoDays = 26;
   usedPtoDays = 0;
   ptoDays: PtoRequest[] = [];
@@ -47,14 +41,27 @@ export class PtoComponent {
   isDarkTheme = false;
   loading: boolean = false;
 
-  constructor(private logApi: LogApiService) {
-    // Theme from localStorage (optional)
+  private subscriptions: Subscription[] = [];
+
+  constructor(private ptoService: PtoService) {
     const savedTheme = localStorage.getItem('isDarkTheme');
     if (savedTheme) {
       this.isDarkTheme = JSON.parse(savedTheme);
       this.applyTheme();
     }
-    this.fetchPtoDays();
+  }
+
+  ngOnInit() {
+    this.subscriptions.push(
+      this.ptoService.ptoDays$.subscribe((val: PtoRequest[]) => this.ptoDays = val),
+      this.ptoService.usedPtoDays$.subscribe((val: number) => this.usedPtoDays = val),
+      this.ptoService.loading$.subscribe((val: boolean) => this.loading = val)
+    );
+    this.ptoService.fetchPtoDays();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub: Subscription) => sub.unsubscribe());
   }
 
   openReasonDialog() {
@@ -62,25 +69,7 @@ export class PtoComponent {
   }
 
   fetchPtoDays() {
-    this.loading = true;
-    this.logApi.getPtoDays().subscribe({
-      next: (response) => {
-        const raw = response.data || response;
-        this.ptoDays = raw.map((item: any) => ({
-          ptoDate: item.attributes?.ptoDate || item.ptoDate,
-          submittedOn: item.attributes?.submittedOn || item.submittedOn,
-          reason: item.attributes?.reason || item.reason,
-          statuss: item.attributes?.statuss || item.statuss,
-        }));
-        this.usedPtoDays = Math.min(this.ptoDays.length, this.totalPtoDays);
-        this.loading = false;
-      },
-      error: () => {
-        this.ptoDays = [];
-        this.usedPtoDays = 0;
-        this.loading = false;
-      }
-    });
+    this.ptoService.fetchPtoDays();
   }
 
   toggleTheme() {
@@ -88,6 +77,7 @@ export class PtoComponent {
     localStorage.setItem('isDarkTheme', JSON.stringify(this.isDarkTheme));
     this.applyTheme();
   }
+
   private applyTheme() {
     if (this.isDarkTheme) {
       document.body.classList.add('dark-theme');
@@ -110,44 +100,36 @@ export class PtoComponent {
     }
   }
 
- submitPto() {
-  if (!this.tempDate || !this.ptoReason) {
-    console.log('Please select a date and provide a reason for your PTO request');
-    return;
-  }
-
-  // Format the ptoDate as YYYY-MM-DD
-  const formattedPtoDate = this.tempDate.toISOString().split('T')[0];
-  
-  // Format submittedOn as ISO string
-  const submittedOnDateTime = new Date().toISOString();
-
-  // Create PTO request with the exact fields from your schema
-  const ptoRequest: PtoRequest = {
-    ptoDate: formattedPtoDate,       // Required Date field
-    submittedOn: submittedOnDateTime, // Required Datetime field
-    reason: this.ptoReason,          // Required Text field
-    statuss: 'Pending'               // Required Enumeration field as defined in your interface
-  };
-
-  console.log('Submitting PTO request:', ptoRequest);
-
-  this.logApi.createPtoDay(ptoRequest).subscribe({
-    next: (response) => {
-      console.log('PTO creation response:', response);
-      console.log('PTO request submitted successfully');
-      this.tempDate = null;          // Reset the date field
-      this.ptoReason = '';           // Reset the reason field
-      this.showReasonDialog = false; // Close the dialog
-      this.fetchPtoDays();           // Refresh the list using your existing method
-    },
-    error: (err) => {
-      console.error('Error creating PTO:', err);
-      if (err.error && err.error.error) {
-        console.error('Specific error details:', err.error.error);
-      }
-      console.error(`Failed to submit PTO request: ${err.error?.error?.message || err.message || 'Unknown error'}`);
+  submitPto() {
+    if (!this.tempDate || !this.ptoReason) {
+      console.log('Please select a date and provide a reason for your PTO request');
+      return;
     }
-  });
-}
+
+    const formattedPtoDate = this.tempDate.toISOString().split('T')[0];
+    const submittedOnDateTime = new Date().toISOString();
+
+    const ptoRequest: PtoRequest = {
+      ptoDate: formattedPtoDate,
+      submittedOn: submittedOnDateTime,
+      reason: this.ptoReason,
+      statuss: 'Pending'
+    };
+
+    this.ptoService.submitPto(
+      ptoRequest,
+      () => {
+        this.tempDate = null;
+        this.ptoReason = '';
+        this.showReasonDialog = false;
+      },
+      (err: any) => {
+        console.error('Error creating PTO:', err);
+        if (err.error && err.error.error) {
+          console.error('Specific error details:', err.error.error);
+        }
+        console.error(`Failed to submit PTO request: ${err.error?.error?.message || err.message || 'Unknown error'}`);
+      }
+    );
+  }
 }

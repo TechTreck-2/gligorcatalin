@@ -1,23 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TestBed } from '@angular/core/testing';
 import { PtoComponent } from './pto.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { LogApiService } from '../log-api.service';
 
 describe('PtoComponent', () => {
-  let component: PtoComponent;
-  let fixture: ComponentFixture<PtoComponent>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [PtoComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(PtoComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [PtoComponent, HttpClientTestingModule], // Standalone + HttpClientTestingModule
+      providers: [LogApiService],
+    });
   });
 
   it('should create', () => {
+    const fixture = TestBed.createComponent(PtoComponent);
+    const component = fixture.componentInstance;
     expect(component).toBeTruthy();
   });
 });
