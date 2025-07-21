@@ -139,7 +139,7 @@ export class TimeTrackingComponent implements OnInit {
   // Make sure duration is a valid number (required field)
   const durationValue = isNaN(this.totalTimeWorked) ? 0 : this.totalTimeWorked;
 
-  // Create a time entry with EXACTLY the fields from your schema
+  // new time entry with necessary the fields
   const newEntry = {
     date: formattedDate,  // required
     type: "WORK",         // required enum

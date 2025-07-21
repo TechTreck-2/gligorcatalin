@@ -52,7 +52,7 @@ describe('TimeTrackingComponent', () => {
 
   describe('formatDuration', () => {
     // Access private method for testing
-    const getFormatDuration = (comp: any) => comp['formatDuration'].bind(comp);
+    const getFormatDuration = (comp: any) => comp['formatDuration'].bind(comp);// Use bind to maintain context 
 
     it('should format less than one minute as Xs', () => {
       expect(getFormatDuration(component)(45)).toBe('45s');
