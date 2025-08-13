@@ -1,0 +1,48 @@
+name: Nightly Test Report
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Runs at 2:00 AM UTC every day
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+
+      - name: Save test results
+        if: failure()
+        run: |
+          mkdir -p reports
+          cp path/to/test-report.xml reports/ # Adjust path if needed
+
+      - name: Send test report via email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.yourprovider.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Nightly Test Report"
+          body: |
+            The test run has completed.
+            Status: ${{ job.status }}
+
+            See attached test results for details.
+          to: your@email.com
+          from: github-actions@yourdomain.com
+          attachments: reports/test-report.xml
