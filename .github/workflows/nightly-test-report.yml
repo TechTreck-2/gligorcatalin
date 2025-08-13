@@ -23,12 +23,6 @@ jobs:
       - name: Run tests
         run: npm test -- --watch=false --browsers=ChromeHeadless
 
-      - name: Save test results
-        if: failure()
-        run: |
-          mkdir -p reports
-          cp path/to/test-report.xml reports/ # Adjust path if needed
-
       - name: Send test report via email
         if: always()
         uses: dawidd6/action-send-mail@v3
@@ -42,7 +36,6 @@ jobs:
             The test run has completed.
             Status: ${{ job.status }}
 
-            See attached test results for details.
-          to: your@email.com
-          from: github-actions@yourdomain.com
-          attachments: reports/test-report.xml
+            (No test result file attached.)
+          to: catalin.gligor@emeal.nttdata.com
+          from: catalin.gligor@emeal.nttdata.com
