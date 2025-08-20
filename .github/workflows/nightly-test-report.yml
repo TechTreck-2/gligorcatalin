@@ -3,6 +3,7 @@ name: Nightly Test Report
 on:
   schedule:
     - cron: "0 2 * * *" # Runs at 2:00 AM UTC every day
+  workflow_dispatch:     # <--- This line should align with schedule
 
 jobs:
   test:
