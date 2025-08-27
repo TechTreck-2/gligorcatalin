@@ -2,8 +2,12 @@ name: Nightly Test Report
 
 on:
   schedule:
-    - cron: "0 2 * * *" # Runs at 2:00 AM UTC every day
+    - cron: "0 2 * * *"
   workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
 
 jobs:
   test:
@@ -23,7 +27,7 @@ jobs:
 
       - name: Run tests
         id: test
-        continue-on-error: true  # Allow workflow to continue even if tests fail
+        continue-on-error: true
         run: |
           npm test -- --watch=false --browsers=ChromeHeadless | tee test-output.txt
 
@@ -36,7 +40,7 @@ jobs:
         if: always()
         uses: peter-evans/create-or-update-comment@v4
         with:
-          issue-number: 1  # <-- Change this to your Nightly Test Report issue number
+          issue-number: 1 # Must be an issue in THIS repo
           body: |
             ### Nightly Test Report
             **Status:** ${{ job.status }}
@@ -44,7 +48,7 @@ jobs:
 
             **Test output (last 30 lines):**
             ```
-            ${{ steps.test.outputs.test-output || 'No output captured.' }}
+            $(tail -n 30 test-output.txt)
             ```
 
             **Failed tests:**
