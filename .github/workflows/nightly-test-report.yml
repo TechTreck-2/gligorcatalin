@@ -37,6 +37,5 @@ jobs:
             The test run has completed.
             Status: ${{ job.status }}
 
-            (No test result file attached.)
           to: catalin.gligor@emeal.nttdata.com
           from: catalin.gligor@emeal.nttdata.com
