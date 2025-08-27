@@ -2,40 +2,59 @@ name: Nightly Test Report
 
 on:
   schedule:
-    - cron: "0 2 * * *" # Runs at 2:00 AM UTC every day
-  workflow_dispatch:     # <--- This line should align with schedule
+    - cron: '0 2 * * *'     # Runs every night at 2am UTC
+  workflow_dispatch:        # Allows manual trigger from the Actions tab
 
 jobs:
-  test:
+  run-tests:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
-        run: npm test -- --watch=false --browsers=ChromeHeadless
+        id: test
+        run: |
+          set -o pipefail
+          npm test -- --ci --reporters=default --reporters=jest-junit | tee test-output.txt
+          echo "::set-output name=exit_code::$?"
 
-      - name: Send test report via email
+      - name: Save test output
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: actions/upload-artifact@v4
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "Nightly Test Report"
-          body: |
-            The test run has completed.
-            Status: ${{ job.status }}
+          name: test-output
+          path: test-output.txt
 
-          to: catalin.gligor@emeal.nttdata.com
-          from: catalin.gligor@emeal.nttdata.com
+      - name: Extract failed tests
+        if: failure()
+        run: |
+          grep -A 1000 -E 'FAIL ' test-output.txt > failed-tests.txt || echo "No failed tests" > failed-tests.txt
+
+      - name: Create or update Nightly Test Report Issue
+        if: always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: 1 # Change this to your Nightly Test Report issue number
+          body: |
+            ### Nightly Test Report for ${{ github.run_id }} - ${{ github.workflow }}
+            **Status:** ${{ job.status }}
+            **Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            **Test output:**
+            ```
+            $(cat test-output.txt | tail -n 30)
+            ```
+
+            **Failed tests:**
+            ```
+            $(cat failed-tests.txt)
+            ```
