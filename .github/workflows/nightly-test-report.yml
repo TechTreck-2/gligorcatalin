@@ -65,3 +65,25 @@ jobs:
             ```
             ${{ steps.failed.outputs.result }}
             ```
+
+      - name: Send report by email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Nightly Test Report - ${{ github.repository }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          body: |
+            Nightly Test Report
+            Status: ${{ job.status }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Test output (last 30 lines):
+            ${{ steps.tail.outputs.result }}
+
+            Failed tests:
+            ${{ steps.failed.outputs.result }}
