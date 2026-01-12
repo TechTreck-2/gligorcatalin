@@ -47,6 +47,9 @@ export class TimeTrackingComponent implements OnInit {
   timeEntries: any[] = [];
   filteredEntries: any[] = [];
   loading: boolean = false;
+  editingEntry: any = null;
+  editStartTime: string = '';
+  editEndTime: string = '';
 
   private readonly renderer = inject(Renderer2);
   private readonly snackBar = inject(MatSnackBar);
@@ -139,12 +142,21 @@ export class TimeTrackingComponent implements OnInit {
   // Make sure duration is a valid number (required field)
   const durationValue = isNaN(this.totalTimeWorked) ? 0 : this.totalTimeWorked;
 
+  // Format times as HH:MM:SS (24-hour format)
+  const formatTime = (date: Date | null): string => {
+    if (!date) return '00:00:00';
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
   // new time entry with necessary the fields
   const newEntry = {
     date: formattedDate,  // required
     type: "WORK",         // required enum
-    startTime: this.clockInTime ? this.clockInTime.toLocaleTimeString() : "",
-    endTime: this.clockOutTime ? this.clockOutTime.toLocaleTimeString() : "",
+    startTime: formatTime(this.clockInTime),
+    endTime: formatTime(this.clockOutTime),
     duration: durationValue,  // required number 
     durationSeconds: durationValue, // optional number
     durationFormatted: this.getFormattedTime(durationValue), // text
@@ -243,16 +255,16 @@ export class TimeTrackingComponent implements OnInit {
     this.loading = true;
     this.logApi.getTimeEntries().subscribe({
       next: (response) => {
-        const raw = response.data || response;
-        // Strapi v4 returns an array in `data`
-        this.timeEntries = (raw || []).map((item: any) => ({
-          ...item.attributes,
-          id: item.id,
-        }));
+        console.log('Time entries response:', response);
+        // Backend returns { success: true, data: [...] }
+        // Each item in data is already the full object: { id, date, type, duration, ... }
+        const entries = response?.data || [];
+        this.timeEntries = entries;
         this.loading = false;
         this.filterEntries();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading entries:', err);
         this.timeEntries = [];
         this.loading = false;
       }
@@ -260,23 +272,92 @@ export class TimeTrackingComponent implements OnInit {
   }
 
   filterEntries() {
+    console.log('Filtering entries. Total entries:', this.timeEntries.length);
+    console.log('Selected date:', this.selectedDate);
+    
     if (this.selectedDate) {
-      const selectedDateStr = new Date(this.selectedDate)
-        .toISOString()
-        .split('T')[0];
+      // Format date locally to avoid timezone issues
+      const year = this.selectedDate.getFullYear();
+      const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(this.selectedDate.getDate()).padStart(2, '0');
+      const selectedDateStr = `${year}-${month}-${day}`;
+
+      console.log('Selected date string:', selectedDateStr);
 
       this.filteredEntries = this.timeEntries.filter(entry => {
-        const entryDateStr = entry.date ||
-          (entry.clockInTime ? new Date(entry.clockInTime).toISOString().split('T')[0] : null);
+        const entryDateStr = entry.date;
+        console.log('Entry date:', entryDateStr, 'Match:', entryDateStr === selectedDateStr);
         return entryDateStr === selectedDateStr;
       });
+      
+      console.log('Filtered entries count:', this.filteredEntries.length);
     } else {
       this.filteredEntries = [];
     }
   }
 
-  editEntry(entry: any) {
-    this.showSnackBar('Edit not implemented yet');
+  startEdit(entry: any) {
+    this.editingEntry = entry;
+    // Use full HH:MM:SS format for input type="time" with step="1"
+    this.editStartTime = entry.startTime || '00:00:00';
+    this.editEndTime = entry.endTime || '00:00:00';
+  }
+
+  cancelEdit() {
+    this.editingEntry = null;
+    this.editStartTime = '';
+    this.editEndTime = '';
+  }
+
+  saveEdit() {
+    if (!this.editStartTime || !this.editEndTime) {
+      this.showSnackBar('Please enter both start and end times');
+      return;
+    }
+
+    const duration = this.calculateDurationFromTime(this.editStartTime, this.editEndTime);
+    if (duration < 0) {
+      this.showSnackBar('End time must be after start time');
+      return;
+    }
+
+    const updatedEntry = {
+      date: this.editingEntry.date,
+      type: this.editingEntry.type || 'WORK',
+      startTime: this.editStartTime,
+      endTime: this.editEndTime,
+      duration: duration,
+      durationSeconds: duration,
+      durationFormatted: this.getFormattedTime(duration),
+      description: this.editingEntry.description || '',
+      statuss: this.editingEntry.statuss || 'Pending',
+      email: this.editingEntry.email || ''
+    };
+
+    console.log('Updating entry ID:', this.editingEntry.id, 'with data:', updatedEntry);
+
+    this.logApi.updateTimeEntry(this.editingEntry.id, updatedEntry).subscribe({
+      next: (response) => {
+        console.log('Update successful:', response);
+        this.cancelEdit();
+        this.loadEntries();
+        this.showSnackBar('Entry updated successfully');
+      },
+      error: (err) => {
+        console.error('Update error:', err);
+        const errorMsg = err.error?.error?.message || err.message || 'Unknown error';
+        this.showSnackBar(`Failed to update: ${errorMsg}`);
+      }
+    });
+  }
+
+  calculateDurationFromTime(startTime: string, endTime: string): number {
+    const parseTime = (timeStr: string): number => {
+      const parts = timeStr.split(':').map(Number);
+      return parts[0] * 3600 + parts[1] * 60 + (parts[2] || 0);
+    };
+    
+    return parseTime(endTime) - parseTime(startTime);
   }
 
   deleteEntry(entry: any) {

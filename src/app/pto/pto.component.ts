@@ -107,11 +107,11 @@ export class PtoComponent implements OnInit, OnDestroy {
     }
 
     const formattedPtoDate = this.tempDate.toISOString().split('T')[0];
-    const submittedOnDateTime = new Date().toISOString();
+    const submittedOnDate = new Date().toISOString().split('T')[0];
 
     const ptoRequest: PtoRequest = {
       ptoDate: formattedPtoDate,
-      submittedOn: submittedOnDateTime,
+      submittedOn: submittedOnDate,
       reason: this.ptoReason,
       statuss: 'Pending'
     };

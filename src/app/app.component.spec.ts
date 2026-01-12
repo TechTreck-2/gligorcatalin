@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 describe('AppComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [AppComponent], // Standalone component goes here!
+      imports: [AppComponent], 
       providers: [
         { provide: ActivatedRoute, useValue: {} } // Mock provider for ActivatedRoute
       ]
@@ -18,5 +18,4 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  // ...other tests...
 });

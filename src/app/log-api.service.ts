@@ -41,7 +41,7 @@ export class LogApiService {
   getTimeEntries(start?: string, end?: string): Observable<any> {
     let url = this.timeEntriesUrl;
     if (start && end) {
-      url += `?filters[date][$gte]=${start}&filters[date][$lte]=${end}`;
+      url += `?startDate=${start}&endDate=${end}`;
     }
     return this.http.get<any>(url);
   }
@@ -50,7 +50,7 @@ export class LogApiService {
   getPtoDays(start?: string, end?: string): Observable<any> {
     let url = this.ptoDaysUrl;
     if (start && end) {
-      url += `?filters[ptoDate][$gte]=${start}&filters[ptoDate][$lte]=${end}`;
+      url += `?startDate=${start}&endDate=${end}`;
     }
     return this.http.get<any>(url);
   }
@@ -88,6 +88,10 @@ export class LogApiService {
 
     console.log('Sending to API:', { data: entry });
     return this.http.post<any>(this.timeEntriesUrl, { data: entry });
+  }
+
+  updateTimeEntry(id: number, entry: any): Observable<any> {
+    return this.http.put<any>(`${this.timeEntriesUrl}/${id}`, { data: entry });
   }
 
   deleteTimeEntry(id: number): Observable<any> {

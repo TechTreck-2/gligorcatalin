@@ -111,11 +111,11 @@ export class LogFilterComponent {
       ptoDays: this.logApi.getPtoDays(startStr, endStr)
     }).subscribe({
       next: (results) => {
-        // Log the raw results for debugging
+        // Log raw results for debugging
         console.log('Raw time entries response:', results.timeEntries);
         console.log('Raw PTO days response:', results.ptoDays);
 
-        // Extract data from Strapi v4 response structure
+        // Extract data 
         const timeEntries = results.timeEntries?.data || [];
         const ptoDays = results.ptoDays?.data || [];
         
@@ -123,7 +123,6 @@ export class LogFilterComponent {
 
         // Process time entries
         timeEntries.forEach((entry: any) => {
-          // Strapi v4 returns attributes object
           const data = entry.attributes || entry;
           
           mergedTimeline.push({
@@ -141,7 +140,6 @@ export class LogFilterComponent {
 
         // Process PTO days
         ptoDays.forEach((pto: any) => {
-          // Strapi v4 returns attributes object
           const data = pto.attributes || pto;
           
           mergedTimeline.push({

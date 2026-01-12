@@ -26,8 +26,8 @@
           </div>
 
           <div class="time-info">
-            <p *ngIf="clockInTime">Clocked In: {{ clockInTime | date:'shortTime' }}</p>
-            <p *ngIf="clockOutTime">Clocked Out: {{ clockOutTime | date:'shortTime' }}</p>
+            <p *ngIf="clockInTime">Clocked In: {{ clockInTime | date:'HH:mm:ss' }}</p>
+            <p *ngIf="clockOutTime">Clocked Out: {{ clockOutTime | date:'HH:mm:ss' }}</p>
           </div>
           <!-- <div *ngIf="data">
             <h2>Fetched Data</h2>
@@ -58,17 +58,29 @@
           </mat-form-field>
 
           <div *ngIf="filteredEntries.length > 0; else noEntries" class="history-list">
-            <div *ngFor="let entry of filteredEntries" class="history-item">
-              <div class="entry-time">
-                <span>{{ entry.clockInTime | date:'shortTime' }} - {{ entry.clockOutTime | date:'shortTime' }}   </span>
+            <div *ngFor="let entry of filteredEntries; let i = index" class="history-item">
+              <div class="entry-time" *ngIf="editingEntry?.id !== entry.id">
+                <span><strong>#{{ i + 1 }}</strong> {{ entry.startTime }} - {{ entry.endTime }}   </span>
                 <span class="duration" *ngIf="entry.durationFormatted">- Time worked: {{ entry.durationFormatted }}</span>
                 <span class="duration" *ngIf="!entry.durationFormatted">- Time worked: {{ getFormattedTime(entry.durationSeconds || entry.duration) }}</span>
               </div>
+              <div class="entry-edit" *ngIf="editingEntry?.id === entry.id">
+                <span><strong>#{{ i + 1 }}</strong></span>
+                <input type="text" [(ngModel)]="editStartTime" placeholder="HH:MM:SS" pattern="[0-2][0-9]:[0-5][0-9]:[0-5][0-9]" maxlength="8">
+                <span> - </span>
+                <input type="text" [(ngModel)]="editEndTime" placeholder="HH:MM:SS" pattern="[0-2][0-9]:[0-5][0-9]:[0-5][0-9]" maxlength="8">
+              </div>
               <div class="entry-actions">
-                <button mat-icon-button (click)="editEntry(entry)">
+                <button mat-icon-button *ngIf="editingEntry?.id !== entry.id" (click)="startEdit(entry)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button (click)="deleteEntry(entry)">
+                <button mat-icon-button *ngIf="editingEntry?.id === entry.id" (click)="saveEdit()" color="primary">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button *ngIf="editingEntry?.id === entry.id" (click)="cancelEdit()">
+                  <mat-icon>close</mat-icon>
+                </button>
+                <button mat-icon-button *ngIf="editingEntry?.id !== entry.id" (click)="deleteEntry(entry)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
